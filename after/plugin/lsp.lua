@@ -1,9 +1,36 @@
-local lsp = require('lsp-zero').preset({})
-lsp.on_attach(function(client, bufnr)
-  lsp.default_keymaps({buffer = bufnr})
-end)
+vim.api.nvim_create_autocmd('LspAttach', {
+  desc = 'LSP actions',
+  callback = function(event)
+    -- Create your keybindings here...
+  end
+})
 
--- (Optional) Configure lua language server for neovim
-require('lspconfig').lua_ls.setup(lsp.nvim_lua_ls())
+require('mason').setup()
+require('mason-lspconfig').setup({
+  ensure_installed = {
+    -- Replace these with whatever servers you want to install
+    'rust_analyzer',
+    'pyright',
+    'gopls',
+    'lua_ls',
+  }
+})
 
-lsp.setup()
+local lspconfig = require('lspconfig')
+
+lspconfig.rust_analyzer.setup{}
+lspconfig.pyright.setup{
+    filetypes = {"python"},
+
+}
+lspconfig.gopls.setup{}
+lspconfig.lua_ls.setup{}
+local lsp_capabilities = require('cmp_nvim_lsp').default_capabilities()
+
+require('mason-lspconfig').setup_handlers({
+  function(server_name)
+    lspconfig[server_name].setup({
+      capabilities = lsp_capabilities,
+    })
+  end,
+})
